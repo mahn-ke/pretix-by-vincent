@@ -1,0 +1,3 @@
+[submodule "pretix-congressschedule"]
+	path = pretix-congressschedule
+	url = https://git.hamburg.ccc.de/ViMaSter/pretix-congressschedule.git
