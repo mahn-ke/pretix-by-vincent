@@ -1,3 +1,4 @@
+#http
 version: '3'
 services:
   app:
@@ -17,15 +18,12 @@ services:
       - ./pretix-congressschedule:/plugin
     ports:
       - "8081:80"
-      - "4434:443"
     networks:
       - backend
 
   database:
     image: postgres:17-alpine3.22
     container_name: database
-    ports:
-      - "5432:5432"
     environment:
       - POSTGRES_USER=pretix
       - POSTGRES_PASSWORD=pretix
