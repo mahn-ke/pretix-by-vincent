@@ -1,54 +1,103 @@
 #http
-version: '3'
+name: pretix
 services:
-  app:
-    container_name: pretix_app
-    build:
-      dockerfile: Dockerfile
-      context: ./docker/pretix
-    restart: always
+  gateway:
+    image: nginx@sha256:a3554c0d0b48177b1413c26e01f695334428020d9df01243fbae3e11cfd17417
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${PRETIX_HTTP_PORT:-8081}:8080"
+    volumes:
+      - ./docker/pretix/public-gateway.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - backend
+      - ingress
     depends_on:
-      - database
-      - cache
+      app:
+        condition: service_healthy
+
+  app:
+    image: pretix/standalone@sha256:aad860a49a1e3307e7bfb9ae3b2dc44714269d4706a2d04ac841299405758717
+    platform: linux/amd64
+    command: ["all"]
+    restart: unless-stopped
+    environment:
+      NUM_WORKERS: "2"
+      PRETIX_DATABASE_PASSWORD: ${PRETIX_DB_PASSWORD:?Provision PRETIX_DB_PASSWORD privately}
+    depends_on:
+      database:
+        condition: service_healthy
+      cache:
+        condition: service_started
+      mail:
+        condition: service_started
     volumes:
       - pretix_data:/data
-      - ./docker/pretix/pretix.cfg:/etc/pretix/pretix.cfg
-      - ./docker/pretix/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./docker/pretix/crontab:/tmp/crontab
-      - ./pretix-congressschedule:/plugin
-    ports:
-      - "8081:80"
+      - ./docker/pretix/public-test.cfg:/etc/pretix/pretix.cfg:ro
+      - ./docker/pretix/pretixtask.conf:/etc/supervisord/pretixtask.conf:ro
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import json,urllib.request; r=urllib.request.Request('http://127.0.0.1/hackertours/39c3ht/widget/product_list?lang=en',headers={'Host':'pretix.by.vincent.mahn.ke','X-Forwarded-Proto':'https'}); assert json.load(urllib.request.urlopen(r,timeout=8))['items_by_category']"
+      interval: 30s
+      timeout: 10s
+      start_period: 90s
+      retries: 5
     networks:
       - backend
 
   database:
-    image: postgres:17-alpine3.22
-    container_name: database
+    image: postgres@sha256:eee6c6e1b0894fa4fe0075eb054af9fd1cf39a35321c2d4110626cfe506411fb
+    restart: unless-stopped
     environment:
-      - POSTGRES_USER=pretix
-      - POSTGRES_PASSWORD=pretix
+      POSTGRES_DB: pretix
+      POSTGRES_USER: pretix
+      POSTGRES_PASSWORD: ${PRETIX_DB_PASSWORD:?Provision PRETIX_DB_PASSWORD privately}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pretix -d pretix"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
     networks:
       - backend
 
   cache:
-    image: redis:alpine3.22
-    container_name: redis
-    ports:
-      - "6379:6379"
-    restart: always
+    image: redis@sha256:57e4255cc971b1c8d6f8a6ca283ac01bc3ecdd914273ef6bfaede87aaecd6541
+    command: ["redis-server", "--appendonly", "yes"]
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+
+  mail:
+    image: axllent/mailpit@sha256:0790692be935ea4420d085694f7985b1f692ca6a8771ab0e0bd8ba75ac180498
+    restart: unless-stopped
+    environment:
+      MP_DATABASE: /data/mailpit.db
+    volumes:
+      - mail_data:/data
     networks:
       - backend
 
 volumes:
   postgres_data:
-    driver: local
+    name: pretix_public_2026_database
+    external: true
   pretix_data:
-    driver: local
+    name: pretix_public_2026_data
+    external: true
+  redis_data:
+    name: pretix_public_2026_redis
+    external: true
+  mail_data:
+    name: pretix_public_2026_mail
+    external: true
 
 networks:
   backend:
-    driver: bridge
-    driver_opts:
-      com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
+    internal: true
+  ingress:
