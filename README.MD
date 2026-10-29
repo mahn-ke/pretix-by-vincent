@@ -108,3 +108,23 @@ alongside the original source exports as `schedule-november-2026.json`.
 For rollback, stop new writers and preserve any post-cutover orders before
 switching database/media snapshots or routing. Keep source and historical
 destination volumes intact; do not overwrite either as a rollback shortcut.
+
+## Verification on 2026-10-29
+
+- Public storefront and both widget languages return HTTP 200 over trusted
+  HTTPS. All 35 currently listed product images match their source SHA-256.
+- All 155 database table counts were checked after restore, accounting only
+  for the migration marker, restricted access rows and password history.
+  Nine order/payment/answer/cart/invoice/voucher/audit tables matched source
+  row hashes exactly before cutover.
+- The private console token can read the event and quotas, but receives
+  HTTP 403 for order reads and event-setting writes.
+- Simulated free and EUR 21 paid checkout passed using the deployed API.
+  No new orders, reservations or email were created; all 18 orders remain.
+- Both console builds and focused configuration/parser tests passed.
+  Both retained shared-highscore OAuth clients authenticated successfully.
+- Emulator integration remains **unverified**: the isolated Azahar launch
+  produced no app log, the established screenshot harness timed out, and
+  Xenia stopped progressing during XUI initialization. These are not evidence
+  of a successful console run. Final artifacts were rebuilt without the
+  temporary harness. Real-console network/checkout testing is still needed.
