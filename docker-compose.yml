@@ -16,7 +16,7 @@ services:
         condition: service_healthy
 
   app:
-    image: pretix/standalone@sha256:aad860a49a1e3307e7bfb9ae3b2dc44714269d4706a2d04ac841299405758717
+    image: pretix/standalone@sha256:40d972314f3785ff4044cb3c5aa18692e99f0553afe7032146bdfec0ce79fc2a
     platform: linux/amd64
     command: ["all"]
     restart: unless-stopped
