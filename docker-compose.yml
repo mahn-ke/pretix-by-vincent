@@ -2,7 +2,7 @@
 name: pretix
 services:
   gateway:
-    image: nginx@sha256:a3554c0d0b48177b1413c26e01f695334428020d9df01243fbae3e11cfd17417
+    image: nginx@sha256:5ab5b0b01097420873a3f3330f44248e34a3c2a3e8d5ee30658aeae8cb7435da
     restart: unless-stopped
     ports:
       - "127.0.0.1:${PRETIX_HTTP_PORT:-8081}:8080"
