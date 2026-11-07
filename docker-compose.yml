@@ -65,7 +65,7 @@ services:
       - backend
 
   cache:
-    image: redis@sha256:57e4255cc971b1c8d6f8a6ca283ac01bc3ecdd914273ef6bfaede87aaecd6541
+    image: redis@sha256:1f88291b4c57bdf249f02eb085a8669889b2d2954e91d4de5118a5da6b78dd53
     command: ["redis-server", "--appendonly", "yes"]
     restart: unless-stopped
     volumes:
