@@ -48,7 +48,7 @@ services:
       - backend
 
   database:
-    image: postgres@sha256:eee6c6e1b0894fa4fe0075eb054af9fd1cf39a35321c2d4110626cfe506411fb
+    image: postgres@sha256:b9f6b8ff03b62f3cfd9d9ba3fe56226a9991c79d3fb46fd46536263bf02be553
     restart: unless-stopped
     environment:
       POSTGRES_DB: pretix
