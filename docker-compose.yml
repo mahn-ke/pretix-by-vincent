@@ -74,7 +74,7 @@ services:
       - backend
 
   mail:
-    image: axllent/mailpit@sha256:0790692be935ea4420d085694f7985b1f692ca6a8771ab0e0bd8ba75ac180498
+    image: axllent/mailpit@sha256:23a2ef85bc50853ab3093645d1d64679afd8887e89da5e48a88940c172591a4e
     restart: unless-stopped
     environment:
       MP_DATABASE: /data/mailpit.db
